@@ -6,7 +6,6 @@ import router from '@ohos.router';
 @Component
 struct Second {
   @State message: string = 'Hi there'
-  @Link linkMessage: string
 
   build() {
     Row() {

@@ -37,16 +37,29 @@ struct Second {
     .height('100%')
   }
 
-  onBackPress() {
-    console.info('onBackPress')
+  // @Entry装饰的组件有 onPageShow, onPageHide, onBackPress
+  // @Component装饰的组件有 aboutToAppear, onPageShow
+
+  aboutToAppear() {
+    console.info('aboutToAppear')
   }
 
-  // 只有被@Entry装饰的组件才可以调用页面的生命周期
   onPageShow() {
-    console.info('Index onPageShow');
+    console.info('onPageShow')
   }
-  // 只有被@Entry装饰的组件才可以调用页面的生命周期
+
+  onBackPress() {
+    console.info('onBackPress')
+    return false
+  }
+
+  // 只有被@Entry装饰的组件才有onPageHide
   onPageHide() {
-    console.info('Index onPageHide');
+    console.info('onPageHide')
   }
+
+  aboutToDisappear() {
+    console.info('aboutToDisappear')
+  }
+
 }

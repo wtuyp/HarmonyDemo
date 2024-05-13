@@ -25,14 +25,14 @@ import http from '@ohos.net.http';
 // 全局 Builder，按引用传递参数，会引起方法内的UI刷新
 @Builder function overBuilder($$: { paramA1: string }) {
   Row() {
-    Text(`Global reference builer: ${$$.paramA1} `)
+    Text(`全局Builder引用传递参数: ${$$.paramA1} `)
   }
 }
 
 // 全局 Builder，按值传递参数，不会引起方法内的UI刷新
 @Builder function overBuilderValue(paramA1: string) {
   Row() {
-    Text(`Global value builer: ${paramA1} `)
+    Text(`全局Builder按值传递参数: ${paramA1} `)
   }
 }
 
@@ -42,17 +42,13 @@ struct Index {
   @State message: string = 'Hello World'
   @State linkMessage: string = '我是父组件传给子组件的linkMessage'
   @State propMessage: string = '我是父组件传给子组件的propMessage'
-  @State label: string = 'Hello'
+  @State builderMessage: string = 'builderMessage'
   @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
 
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
   aboutToAppear() {
     this.listener.on('change', this.onPortrait.bind(this))
-  }
-
-  aboutToDisappear() {
-
   }
 
   onPortrait(mediaQueryResult) {
@@ -76,13 +72,13 @@ struct Index {
   // 组件内 Builder
   @Builder builderFunction($$: { paramA1: string }) {
     Row() {
-      Text(`Component reference builder: ${$$.paramA1} `)
+      Text(`组件内Builder引用传递参数: ${$$.paramA1}`)
     }
   }
 
   @Builder builderFunctionValue(paramA1: string) {
   Row() {
-    Text(`Component value builder: ${paramA1} `)
+    Text(`组件内Builder按值传递参数: ${paramA1}`)
   }
 }
 
@@ -163,19 +159,19 @@ struct Index {
         .backgroundColor(0xAFEEEE)
         // .direction(FlexDirection.Row)
 
-        // 在Parent组件中调用overBuilder的时候，将this.label引用传递给overBuilder
         // 组件外 Builder
-        overBuilder({ paramA1: this.label })
-        overBuilderValue(this.label)
+        overBuilder({ paramA1: this.builderMessage })
+        overBuilderValue(this.builderMessage)
 
         // 组件内 Builder
-        this.builderFunction({ paramA1: this.label})
-        this.builderFunctionValue(this.label)
+        this.builderFunction({ paramA1: this.builderMessage})
+        this.builderFunctionValue(this.builderMessage)
 
-        Button('Click me').onClick(() => {
-          // 点击“Click me”后，UI从“Hello”刷新为“ArkUI”
-          this.label = 'ArkUI';
-        }).margin({ top: 10})
+        Button('Click me')
+          .onClick(() => {
+            this.builderMessage = 'ArkUI';
+          })
+          .margin({ top: 10 })
       }
 
       .width('100%')

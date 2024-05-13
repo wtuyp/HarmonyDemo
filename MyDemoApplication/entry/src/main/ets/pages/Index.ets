@@ -4,7 +4,6 @@ import router from '@ohos.router';
 import mediaQuery from '@ohos.mediaquery';
 import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
-import util from '@ohos.util';
 
 // 网络请求
 import http from '@ohos.net.http';
@@ -37,24 +36,14 @@ import http from '@ohos.net.http';
   }
 }
 
-class Contact {
-  key: string = util.generateRandomUUID(true);
-  name: string;
-  icon: Resource;
-
-  constructor(name: string, icon: Resource) {
-    this.name = name;
-    this.icon = icon;
-  }
-}
-
 @Entry
 @Component
 struct Index {
   @State message: string = 'Hello World'
   @State linkMessage: string = '我是父组件传给子组件的linkMessage'
   @State propMessage: string = '我是父组件传给子组件的propMessage'
-  @State label: string = 'Hello';
+  @State label: string = 'Hello'
+  @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
 
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
@@ -114,6 +103,7 @@ struct Index {
         Column({ space: 5 }) {
           Text(this.linkMessage)
           Text(this.propMessage)
+          Text('Hello组件被点击的次数' + this.helloComponentsTapCount)
         }
         .backgroundColor('#ffffd0d0')
         .width('100%')
@@ -142,10 +132,24 @@ struct Index {
         })
 
         Stack({ }) {
-          Column(){}.width('90%').height('100%').backgroundColor('#ff58b87c')
-          Text('text').width('60%').height('60%').backgroundColor('#ffc3f6aa')
-          Button('button').width('30%').height('30%').backgroundColor('#ff8ff3eb').fontColor('#000')
-        }.width('100%').height(150).margin({ top: 50 }).alignContent(Alignment.Center)
+          Column(){}
+            .width('90%')
+            .height('100%')
+            .backgroundColor('#ff58b87c')
+          Text('text')
+            .width('60%')
+            .height('60%')
+            .backgroundColor('#ffc3f6aa')
+          Button('button')
+            .width('30%')
+            .height('30%')
+            .backgroundColor('#ff8ff3eb')
+            .fontColor('#000')
+        }
+          .width('100%')
+          .height(150)
+          .margin({ top: 10 })
+          .alignContent(Alignment.Center)
 
         Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceBetween }) {
           Text('1').textStyle().backgroundColor(0xF5DEB3).extendTextStyles(10, TextAlign.Start)
@@ -182,14 +186,14 @@ struct Index {
 
 @Component
 struct HelloComponent {
-  @State message: string = "Hello, I'm Hello Component!";
+  @State message: string = "Hello, I'm Hello Component!"
   @BuilderParam builder: () => void
 
-  @Link linkMessage: string;  // 双向绑定，子组件更新回传给父组件
-  @Prop propMessage: string;  // 子组件更新不会回传给父组件
+  @Link linkMessage: string // 双向绑定，子组件更新回传给父组件
+  @Prop propMessage: string // 单向传值，子组件更新不会回传给父组件
+  @Consume('helloComponentsTapCount') tapCount: number
 
   build() {
-    // HelloComponent自定义组件组合系统组件Row和Text
     Column({ space: 5 }) {
       Text(this.message)
       this.builder()
@@ -203,6 +207,7 @@ struct HelloComponent {
       this.message = '您好，我是Hello子组件!'
       this.linkMessage = '子组件更新了linkMessage'
       this.propMessage = '子组件更新了PropMessage'
+      this.tapCount++
     })
   }
 }

@@ -2,7 +2,7 @@
 // CustomBtn.ets
 
 @Component
-struct CustomBtn {
+export struct CustomBtn {
   @Link showText: string
 
   build() {

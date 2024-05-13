@@ -52,6 +52,8 @@ class Contact {
 @Component
 struct Index {
   @State message: string = 'Hello World'
+  @State linkMessage: string = '我是父组件传给子组件的linkMessage'
+  @State propMessage: string = '我是父组件传给子组件的propMessage'
   @State label: string = 'Hello';
 
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
@@ -106,13 +108,21 @@ struct Index {
     Row() {
       Column() {
         // HelloComponent 中有BuilderParam修饰，可以用尾随闭包传参。
-        HelloComponent({ message: 'Hello, World!' }) {
-          Text('这是父组件给你的')
+        HelloComponent({ linkMessage: $linkMessage, propMessage: this.propMessage }) {
+          Text('这是父组件给子组件的[Text]，你可以点我').fontColor(Color.Red)
         }
-        Image('xx')
+        Column({ space: 5 }) {
+          Text(this.linkMessage)
+          Text(this.propMessage)
+        }
+        .backgroundColor('#ffffd0d0')
+        .width('100%')
+        .padding(10)
+
         Text(this.message)
-          .fontSize(50)
+          .fontSize(30)
           .fontWeight(FontWeight.Bold)
+        .margin({ top: 10 })
         Button() {
           Text('Next')
             .fontSize(30)
@@ -172,19 +182,27 @@ struct Index {
 
 @Component
 struct HelloComponent {
-  @State message: string = 'Hello, World!';
+  @State message: string = "Hello, I'm Hello Component!";
   @BuilderParam builder: () => void
-  // @Link linkMessage: string;
+
+  @Link linkMessage: string;  // 双向绑定，子组件更新回传给父组件
+  @Prop propMessage: string;  // 子组件更新不会回传给父组件
 
   build() {
     // HelloComponent自定义组件组合系统组件Row和Text
-    Column() {
+    Column({ space: 5 }) {
       Text(this.message)
-        .onClick(() => {
-          // 状态变量message的改变驱动UI刷新，UI从'Hello, World!'刷新为'Hello, ArkUI!'
-          this.message = 'Hello, ArkUI!';
-        })
       this.builder()
+      Text(this.linkMessage)
+      Text(this.propMessage)
     }
+    .padding(10)
+    .backgroundColor('#F4F4F4')
+    .width('100%')
+    .onClick(() => {
+      this.message = '您好，我是Hello子组件!'
+      this.linkMessage = '子组件更新了linkMessage'
+      this.propMessage = '子组件更新了PropMessage'
+    })
   }
 }

@@ -1,4 +1,3 @@
-
 // 路由
 import router from '@ohos.router';
 import mediaQuery from '@ohos.mediaquery';
@@ -9,7 +8,7 @@ import common from '@ohos.app.ability.common';
 import http from '@ohos.net.http';
 
 // 全局 @Styles 要加 function
-@Styles function globalStyles () {
+@Styles function globalStyles() {
   .width(150)
   .height(50)
   .backgroundColor(Color.Pink)
@@ -37,7 +36,6 @@ import http from '@ohos.net.http';
 }
 
 
-
 // LocalStorage 实例并初始化
 let storage = new LocalStorage({ 'NumberKey': 47 });
 
@@ -50,15 +48,15 @@ struct Index {
   @State propMessage: string = '我是父组件传给子组件的propMessage'
   @State builderMessage: string = 'builderMessage'
   @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
-
-  @LocalStorageLink('NumberKey') indexStoreLink: number = 1;
+  @LocalStorageLink('NumberKey') indexStoreLink: number = 1
+  @StorageLink('AppStorageNumberKey') @Watch('indexAppStoreLinkChanged') indexAppStoreLink: number = 1
 
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
   aboutToAppear() {
     this.listener.on('change', this.onPortrait.bind(this))
 
-
+    this.appStorageDemo()
   }
 
   onPortrait(mediaQueryResult) {
@@ -75,10 +73,10 @@ struct Index {
     let propA: string = storage.get('PropA') // propA == 47
     let link1 = storage.link('PropA'); // link1.get() == 47
     let link2 = storage.link('PropA'); // link2.get() == 47
-    let prop = storage.prop('PropA');  // prop.get() = 47
+    let prop = storage.prop('PropA'); // prop.get() = 47
 
     link1.set(48); // two-way sync: link1.get() == link2.get() == prop.get() == 48
-    prop.set(1);   // one-way sync: prop.get()=1; but link1.get() == link2.get() == 48
+    prop.set(1); // one-way sync: prop.get()=1; but link1.get() == link2.get() == 48
     link1.set(49); // two-way sync: link1.get() == link2.get() == prop.get() == 49
   }
 
@@ -88,12 +86,12 @@ struct Index {
     AppStorage.SetOrCreate('AppStorageNumberKey', 47);
 
     let num: number = AppStorage.Get('AppStorageNumberKey')
-    var link1 = AppStorage.Link('AppStorageNumberKey')  // link1.get() == 47
-    var link2 = AppStorage.Link('AppStorageNumberKey')  // link2.get() == 47
-    var prop = AppStorage.Prop('AppStorageNumberKey')   // prop.get() == 47
+    var link1 = AppStorage.Link('AppStorageNumberKey') // link1.get() == 47
+    var link2 = AppStorage.Link('AppStorageNumberKey') // link2.get() == 47
+    var prop = AppStorage.Prop('AppStorageNumberKey') // prop.get() == 47
 
     link1.set(48) // two-way sync: link1.get() == link2.get() == prop.get() == 48
-    prop.set(1)   // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
+    prop.set(1) // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
     link2.set(49) // two-way sync: link1.get() == link2.get() == prop.get() == 49
 
     AppStorage.Delete('AppStorageNumberKey')
@@ -110,6 +108,10 @@ struct Index {
     });
   }
 
+  indexAppStoreLinkChanged() {
+    console.info(`indexAppStoreLink: ${this.indexAppStoreLink}`)
+  }
+
   // 组件内 Builder
   @Builder builderFunction($$: { paramA1: string }) {
     Row() {
@@ -118,10 +120,10 @@ struct Index {
   }
 
   @Builder builderFunctionValue(paramA1: string) {
-  Row() {
-    Text(`组件内Builder按值传递参数: ${paramA1}`)
+    Row() {
+      Text(`组件内Builder按值传递参数: ${paramA1}`)
+    }
   }
-}
 
 
   // @Styles仅支持通用属性和通用事件。组件内 @Styles 不用加 function
@@ -137,15 +139,18 @@ struct Index {
         HelloComponent({ linkMessage: $linkMessage, propMessage: this.propMessage }) {
           Text('这是父组件给子组件的[Text]，你可以点我').fontColor(Color.Red)
         }
+
         Column({ space: 5 }) {
           Text(this.linkMessage)
           Text(this.propMessage)
           Text('@Provide helloComponentsTapCount: ' + this.helloComponentsTapCount)
           Text('@LocalStorageLink indexStoreLink: ' + this.indexStoreLink)
+          Text('@StorageLink indexAppStoreLink: ' + this.indexAppStoreLink)
         }
-        .onClick(()=>{
+        .onClick(() => {
           this.helloComponentsTapCount++
           this.indexStoreLink += 3
+          this.indexAppStoreLink += 5
         })
         .backgroundColor('#ffffd0d0')
         .width('100%')
@@ -154,7 +159,7 @@ struct Index {
         Text(this.message)
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
-        .margin({ top: 10 })
+          .margin({ top: 10 })
         Button() {
           Text('Next')
             .fontSize(30)
@@ -170,14 +175,16 @@ struct Index {
           console.info(`Succeeded in clicking the 'Next' button.`)
 
           this.message = 'Hello, ArkTs!'
-          router.pushUrl({ url: 'pages/Second'})
+          router.pushUrl({ url: 'pages/Second' })
         })
 
-        Stack({ }) {
-          Column(){}
-            .width('90%')
-            .height('100%')
-            .backgroundColor('#ff58b87c')
+        Stack({}) {
+          Column() {
+          }
+          .width('90%')
+          .height('100%')
+          .backgroundColor('#ff58b87c')
+
           Text('text')
             .width('60%')
             .height('60%')
@@ -188,10 +195,10 @@ struct Index {
             .backgroundColor('#ff8ff3eb')
             .fontColor('#000')
         }
-          .width('100%')
-          .height(150)
-          .margin({ top: 10 })
-          .alignContent(Alignment.Center)
+        .width('100%')
+        .height(150)
+        .margin({ top: 10 })
+        .alignContent(Alignment.Center)
 
         Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceBetween }) {
           Text('1').textStyle().backgroundColor(0xF5DEB3).extendTextStyles(10, TextAlign.Start)
@@ -210,7 +217,7 @@ struct Index {
         overBuilderValue(this.builderMessage)
 
         // 组件内 Builder
-        this.builderFunction({ paramA1: this.builderMessage})
+        this.builderFunction({ paramA1: this.builderMessage })
         this.builderFunctionValue(this.builderMessage)
 
         Button('Click me')
@@ -230,12 +237,11 @@ struct Index {
 struct HelloComponent {
   @State message: string = "Hello, I'm Hello Component!"
   @BuilderParam builder: () => void
-
   @Link linkMessage: string // 双向绑定，子组件更新回传给父组件
   @Prop propMessage: string // 单向传值，子组件更新不会回传给父组件
   @Consume('helloComponentsTapCount') tapCount: number
-
   @LocalStorageLink('NumberKey') helloStoreLink: number = 1;
+  @StorageLink('AppStorageNumberKey') helloAppStoreLink: number = 1
 
   build() {
     Column({ space: 5 }) {
@@ -253,6 +259,7 @@ struct HelloComponent {
       this.propMessage = '子组件更新了PropMessage'
       this.tapCount++
       this.helloStoreLink += 2
+      this.helloAppStoreLink += 10
     })
   }
 }

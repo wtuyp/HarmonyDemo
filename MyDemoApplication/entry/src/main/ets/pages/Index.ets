@@ -50,6 +50,7 @@ struct Index {
   @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
   @LocalStorageLink('NumberKey') indexStoreLink: number = 1
   @StorageLink('AppStorageNumberKey') @Watch('indexAppStoreLinkChanged') indexAppStoreLink: number = 1
+  @StorageLink('PersistentStorageNumberKey') indexPersistentStoreLink: number = 26; // PersistentStorage 同步属性
 
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
@@ -57,6 +58,7 @@ struct Index {
     this.listener.on('change', this.onPortrait.bind(this))
 
     this.appStorageDemo()
+    this.persistentStorageDemo()
   }
 
   onPortrait(mediaQueryResult) {
@@ -96,6 +98,26 @@ struct Index {
 
     AppStorage.Delete('AppStorageNumberKey')
     AppStorage.Clear()
+  }
+
+  // PersistentStorage 应用
+  persistentStorageDemo() {
+    // PersistentStorage 中的 Key 是和 AppStorage 共用的。
+    // 请参考图1流程图 https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V2/arkts-persiststorage-0000001474017166-V2
+    PersistentStorage.PersistProps([
+      { key: 'PersistentStorageNumberKey', defaultValue: '0' },
+      { key: 'Key', defaultValue: '1' }
+    ]);
+
+    PersistentStorage.PersistProp('aProp', 48);
+
+    let keys: Array<string> = PersistentStorage.Keys()
+
+    // 通过 AppStorage 获取
+    let aProp = AppStorage.Get('aProp')
+
+    AppStorage.SetOrCreate('aProp', 50)
+    aProp = AppStorage.Get('aProp') // aProp == 50
   }
 
   // 改变设备横竖屏状态函数

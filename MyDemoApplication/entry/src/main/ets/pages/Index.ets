@@ -36,7 +36,10 @@ import http from '@ohos.net.http';
   }
 }
 
-@Entry
+// 创建新实例并使用给定对象初始化
+let storage = new LocalStorage({ 'NumberKey': 47 });
+
+@Entry(storage)
 @Component
 struct Index {
   @State message: string = 'Hello World'
@@ -45,10 +48,14 @@ struct Index {
   @State builderMessage: string = 'builderMessage'
   @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
 
+  @LocalStorageLink('NumberKey') indexStoreLink: number = 1;
+
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
   aboutToAppear() {
     this.listener.on('change', this.onPortrait.bind(this))
+
+
   }
 
   onPortrait(mediaQueryResult) {
@@ -57,6 +64,19 @@ struct Index {
     } else {
       this.message = 'Portrait'
     }
+  }
+
+  // LocalStorage 的应用
+  localStorageDemo() {
+    let storage = new LocalStorage({ 'PropA': 47 }); // 创建新实例并使用给定对象初始化
+    let propA: string = storage.get('PropA') // propA == 47
+    let link1 = storage.link('PropA'); // link1.get() == 47
+    let link2 = storage.link('PropA'); // link2.get() == 47
+    let prop = storage.prop('PropA');  // prop.get() = 47
+
+    link1.set(48); // two-way sync: link1.get() == link2.get() == prop.get() == 48
+    prop.set(1);   // one-way sync: prop.get()=1; but link1.get() == link2.get() == 48
+    link1.set(49); // two-way sync: link1.get() == link2.get() == prop.get() == 49
   }
 
   // 改变设备横竖屏状态函数
@@ -100,6 +120,7 @@ struct Index {
           Text(this.linkMessage)
           Text(this.propMessage)
           Text('Hello组件被点击的次数' + this.helloComponentsTapCount)
+          Text('indexStoreLink的值' + this.indexStoreLink)
         }
         .backgroundColor('#ffffd0d0')
         .width('100%')
@@ -189,6 +210,8 @@ struct HelloComponent {
   @Prop propMessage: string // 单向传值，子组件更新不会回传给父组件
   @Consume('helloComponentsTapCount') tapCount: number
 
+  @LocalStorageLink('NumberKey') helloStoreLink: number = 1;
+
   build() {
     Column({ space: 5 }) {
       Text(this.message)
@@ -204,6 +227,7 @@ struct HelloComponent {
       this.linkMessage = '子组件更新了linkMessage'
       this.propMessage = '子组件更新了PropMessage'
       this.tapCount++
+      this.helloStoreLink += 2
     })
   }
 }

@@ -36,8 +36,11 @@ import http from '@ohos.net.http';
   }
 }
 
-// 创建新实例并使用给定对象初始化
+
+
+// LocalStorage 实例并初始化
 let storage = new LocalStorage({ 'NumberKey': 47 });
+
 
 @Entry(storage)
 @Component
@@ -77,6 +80,24 @@ struct Index {
     link1.set(48); // two-way sync: link1.get() == link2.get() == prop.get() == 48
     prop.set(1);   // one-way sync: prop.get()=1; but link1.get() == link2.get() == 48
     link1.set(49); // two-way sync: link1.get() == link2.get() == prop.get() == 49
+  }
+
+  // AppStorage 的应用
+  appStorageDemo() {
+    // AppStorage 实例并初始化
+    AppStorage.SetOrCreate('AppStorageNumberKey', 47);
+
+    let num: number = AppStorage.Get('AppStorageNumberKey')
+    var link1 = AppStorage.Link('AppStorageNumberKey')  // link1.get() == 47
+    var link2 = AppStorage.Link('AppStorageNumberKey')  // link2.get() == 47
+    var prop = AppStorage.Prop('AppStorageNumberKey')   // prop.get() == 47
+
+    link1.set(48) // two-way sync: link1.get() == link2.get() == prop.get() == 48
+    prop.set(1)   // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
+    link2.set(49) // two-way sync: link1.get() == link2.get() == prop.get() == 49
+
+    AppStorage.Delete('AppStorageNumberKey')
+    AppStorage.Clear()
   }
 
   // 改变设备横竖屏状态函数
@@ -119,9 +140,13 @@ struct Index {
         Column({ space: 5 }) {
           Text(this.linkMessage)
           Text(this.propMessage)
-          Text('Hello组件被点击的次数' + this.helloComponentsTapCount)
-          Text('indexStoreLink的值' + this.indexStoreLink)
+          Text('@Provide helloComponentsTapCount: ' + this.helloComponentsTapCount)
+          Text('@LocalStorageLink indexStoreLink: ' + this.indexStoreLink)
         }
+        .onClick(()=>{
+          this.helloComponentsTapCount++
+          this.indexStoreLink += 3
+        })
         .backgroundColor('#ffffd0d0')
         .width('100%')
         .padding(10)

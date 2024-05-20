@@ -88,13 +88,14 @@ struct Index {
     AppStorage.SetOrCreate('AppStorageNumberKey', 47);
 
     let num: number = AppStorage.Get('AppStorageNumberKey')
-    var link1 = AppStorage.Link('AppStorageNumberKey') // link1.get() == 47
-    var link2 = AppStorage.Link('AppStorageNumberKey') // link2.get() == 47
-    var prop = AppStorage.Prop('AppStorageNumberKey') // prop.get() == 47
+    let link1 = AppStorage.Link('AppStorageNumberKey')  // link1.get() == 47
+    let link2 = AppStorage.Link('AppStorageNumberKey')  // link2.get() == 47
+    let prop = AppStorage.Prop('AppStorageNumberKey')   // prop.get() == 47
 
     link1.set(48) // two-way sync: link1.get() == link2.get() == prop.get() == 48
-    prop.set(1) // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
-    link2.set(49) // two-way sync: link1.get() == link2.get() == prop.get() == 49
+    prop.set(1)   // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
+    link2.set(49) // two-way sync: link1.getTapGesture() == link2.get() == prop.get() == 49
+    link2.set(49) // two-way sync: link1.getTapGesture() == link2.get() == prop.get() == 49
 
     AppStorage.Delete('AppStorageNumberKey')
     AppStorage.Clear()

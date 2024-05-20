@@ -197,7 +197,7 @@ struct Index {
           console.info(`Succeeded in clicking the 'Next' button.`)
 
           this.message = 'Hello, ArkTs!'
-          router.pushUrl({ url: 'pages/Second' })
+          router.pushUrl({ url: 'pages/Second', params: { 'id': 123, info: 'info'} })
         })
 
         Stack({}) {

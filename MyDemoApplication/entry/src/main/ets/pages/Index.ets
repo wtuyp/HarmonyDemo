@@ -47,7 +47,7 @@ struct Index {
   @State linkMessage: string = '我是父组件传给子组件的linkMessage'
   @State propMessage: string = '我是父组件传给子组件的propMessage'
   @State builderMessage: string = 'builderMessage'
-  @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0
+  @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0 // 父组件与子孙组件Consume数据绑定
   @LocalStorageLink('NumberKey') indexStoreLink: number = 1
   @StorageLink('AppStorageNumberKey') @Watch('indexAppStoreLinkChanged') indexAppStoreLink: number = 1
   @StorageLink('PersistentStorageNumberKey') indexPersistentStoreLink: number = 26; // PersistentStorage 同步属性
@@ -77,9 +77,9 @@ struct Index {
     let link2 = storage.link('PropA'); // link2.get() == 47
     let prop = storage.prop('PropA'); // prop.get() = 47
 
-    link1.set(48); // two-way sync: link1.get() == link2.get() == prop.get() == 48
-    prop.set(1); // one-way sync: prop.get()=1; but link1.get() == link2.get() == 48
-    link1.set(49); // two-way sync: link1.get() == link2.get() == prop.get() == 49
+    link1.set(48);  // 双向同步: link1.get() == link2.get() == prop.get() == 48
+    prop.set(1);    // 单向同步: prop.get() = 1; 而 link1.get() == link2.get() == 48
+    link2.set(49);  // 双向同步: link1.get() == link2.get() == prop.get() == 49
   }
 
   // AppStorage 的应用
@@ -92,10 +92,9 @@ struct Index {
     let link2 = AppStorage.Link('AppStorageNumberKey')  // link2.get() == 47
     let prop = AppStorage.Prop('AppStorageNumberKey')   // prop.get() == 47
 
-    link1.set(48) // two-way sync: link1.get() == link2.get() == prop.get() == 48
-    prop.set(1)   // one-way sync: prop.get() == 1; but link1.get() == link2.get() == 48
-    link2.set(49) // two-way sync: link1.getTapGesture() == link2.get() == prop.get() == 49
-    link2.set(49) // two-way sync: link1.getTapGesture() == link2.get() == prop.get() == 49
+    link1.set(48) // 双向同步: link1.get() == link2.get() == prop.get() == 48
+    prop.set(1)   // 单向同步: prop.get() == 1; 而 link1.get() == link2.get() == 48
+    link2.set(49) // 双向同步: link1.get() == link2.get() == prop.get() == 49
 
     AppStorage.Delete('AppStorageNumberKey')
     AppStorage.Clear()

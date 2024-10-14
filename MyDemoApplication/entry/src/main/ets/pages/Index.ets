@@ -77,7 +77,9 @@ struct Index {
   listener = mediaQuery.matchMediaSync('(orientation: landscape)')
 
   aboutToAppear() {
-    this.listener.on('change', this.onPortrait.bind(this))
+    this.listener.on('change', (result) => {
+      this.onPortrait(result)
+    })
 
     this.appStorageDemo()
     this.persistentStorageDemo()

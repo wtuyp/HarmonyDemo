@@ -7,42 +7,64 @@ import common from '@ohos.app.ability.common';
 // 网络请求
 import http from '@ohos.net.http';
 
-// 全局 @Styles 要加 function
-@Styles function globalStyles() {
+// 在全局定义时需在方法名前面添加 function 关键字，组件内定义时则不需要。
+
+// @Styles 用于样式的重用，仅支持通用属性和通用事件。
+// @Styles 方法不支持参数。
+@Styles
+function globalStyles() {
   .width(150)
   .height(50)
   .backgroundColor(Color.Pink)
 }
 
-// 可以定义 Text 的私有属性，这些是无法在 @Styles 中定义的
-@Extend(Text) function extendTextStyles(fontSize: number, textAlign: TextAlign) {
+// @Extend 定义扩展组件样式
+// 和 @Styles 不同，@Extend 仅支持在全局定义，不支持在组件内部定义。
+// 和 @Styles 不同，@Extend 支持封装指定组件的私有属性、私有事件和自身定义的全局方法。
+// 和 @Styles 不同，@Extend 装饰的方法支持参数，开发者可以在调用时传递参数，调用遵循 TS 方法传值调用。
+// @Extend 装饰的方法的参数可以为 function，作为 Event 事件的句柄。
+// @Extend的 参数可以为状态变量，当状态变量改变时，UI可以正常的被刷新渲染。
+@Extend(Text)
+function textExtendStyles(fontSize: number, textAlign: TextAlign) {
   .textAlign(textAlign)
   .fontColor(Color.Green)
   .fontSize(fontSize)
 }
 
-// 全局 Builder，按引用传递参数，会引起方法内的UI刷新
-@Builder function overBuilder($$: { paramA1: string }) {
+// @Builder 通过按引用传递的方式传入参数，才会触发动态渲染UI，并且参数只能是一个。
+// @Builder 传入的参数中同时包含按值传递和按引用传递两种方式，不会触发动态渲染UI。
+class Tmp {
+  paramA1: string = ''
+}
+
+@Builder
+function overBuilderRef($$: Tmp) {
   Row() {
     Text(`全局Builder引用传递参数: ${$$.paramA1} `)
   }
 }
 
-// 全局 Builder，按值传递参数，不会引起方法内的UI刷新
-@Builder function overBuilderValue(paramA1: string) {
+// @Builder，按值传递参数，不会引起方法内的UI刷新
+@Builder
+function overBuilderValue(paramA1: string) {
   Row() {
     Text(`全局Builder按值传递参数: ${paramA1} `)
   }
 }
 
 
-// LocalStorage 实例并初始化
-let storage = new LocalStorage({ 'NumberKey': 47 });
+// LocalStorage 是页面级的 UI 状态存储，通过 @Entry 装饰器接收的参数可以在页面内共享同一个 LocalStorage 实例。
+// @LocalStorageProp 装饰的变量与 LocalStorage 中给定属性建立单向同步关系。
+// @LocalStorageLink 装饰的变量与 LocalStorage 中给定属性建立双向同步关系。
 
+// LocalStorage 实例并初始化
+let storageParam: Record<string, number> = { 'NumberKey': 47 }
+let storage = new LocalStorage(storageParam);
 
 @Entry(storage)
 @Component
 struct Index {
+  @State textHeight: number = 50
   @State message: string = 'Hello World'
   @State linkMessage: string = '我是父组件传给子组件的linkMessage'
   @State propMessage: string = '我是父组件传给子组件的propMessage'
@@ -61,7 +83,7 @@ struct Index {
     this.persistentStorageDemo()
   }
 
-  onPortrait(mediaQueryResult) {
+  onPortrait(mediaQueryResult: mediaQuery.MediaQueryResult) {
     if (mediaQueryResult.matches) {
       this.message = 'Landscape'
     } else {
@@ -71,53 +93,54 @@ struct Index {
 
   // LocalStorage 的应用
   localStorageDemo() {
-    let storage = new LocalStorage({ 'PropA': 47 }); // 创建新实例并使用给定对象初始化
-    let propA: string = storage.get('PropA') // propA == 47
-    let link1 = storage.link('PropA'); // link1.get() == 47
-    let link2 = storage.link('PropA'); // link2.get() == 47
-    let prop = storage.prop('PropA'); // prop.get() = 47
+    let para: Record<string, number> = { 'PropA': 47 };
+    let storage = new LocalStorage(para);                                   // 创建新实例并使用给定对象初始化
+    let propA: string | undefined = storage.get('PropA')                    // propA == 47
+    let link1: SubscribedAbstractProperty<number> = storage.link('PropA');  // link1.get() == 47
+    let link2: SubscribedAbstractProperty<number> = storage.link('PropA');  // link2.get() == 47
+    let prop: SubscribedAbstractProperty<number> = storage.prop('PropA');   // prop.get() = 47
 
     link1.set(48);  // 双向同步: link1.get() == link2.get() == prop.get() == 48
     prop.set(1);    // 单向同步: prop.get() = 1; 而 link1.get() == link2.get() == 48
     link2.set(49);  // 双向同步: link1.get() == link2.get() == prop.get() == 49
   }
 
-  // AppStorage 的应用
+  // AppStorage 应用全局的UI状态存储
   appStorageDemo() {
     // AppStorage 实例并初始化
-    AppStorage.SetOrCreate('AppStorageNumberKey', 47);
+    AppStorage.setOrCreate('AppStorageNumberKey', 47);
 
-    let num: number = AppStorage.Get('AppStorageNumberKey')
-    let link1 = AppStorage.Link('AppStorageNumberKey')  // link1.get() == 47
-    let link2 = AppStorage.Link('AppStorageNumberKey')  // link2.get() == 47
-    let prop = AppStorage.Prop('AppStorageNumberKey')   // prop.get() == 47
+    let num: number | undefined = AppStorage.get('AppStorageNumberKey')
+    let link1: SubscribedAbstractProperty<number> = AppStorage.link('AppStorageNumberKey')  // link1.get() == 47
+    let link2: SubscribedAbstractProperty<number> = AppStorage.link('AppStorageNumberKey')  // link2.get() == 47
+    let prop: SubscribedAbstractProperty<number> = AppStorage.prop('AppStorageNumberKey')   // prop.get() == 47
 
     link1.set(48) // 双向同步: link1.get() == link2.get() == prop.get() == 48
     prop.set(1)   // 单向同步: prop.get() == 1; 而 link1.get() == link2.get() == 48
     link2.set(49) // 双向同步: link1.get() == link2.get() == prop.get() == 49
 
-    AppStorage.Delete('AppStorageNumberKey')
-    AppStorage.Clear()
+    AppStorage.delete('AppStorageNumberKey')
+    AppStorage.clear()
   }
 
   // PersistentStorage 应用
   persistentStorageDemo() {
     // PersistentStorage 中的 Key 是和 AppStorage 共用的。
     // 请参考图1流程图 https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V2/arkts-persiststorage-0000001474017166-V2
-    PersistentStorage.PersistProps([
+    PersistentStorage.persistProps([
       { key: 'PersistentStorageNumberKey', defaultValue: '0' },
       { key: 'Key', defaultValue: '1' }
     ]);
 
-    PersistentStorage.PersistProp('aProp', 48);
+    PersistentStorage.persistProp('aProp', 48);
 
-    let keys: Array<string> = PersistentStorage.Keys()
+    let keys: Array<string> = PersistentStorage.keys()
 
     // 通过 AppStorage 获取
-    let aProp = AppStorage.Get('aProp')
+    let aProp : number | undefined = AppStorage.get('aProp')
 
-    AppStorage.SetOrCreate('aProp', 50)
-    aProp = AppStorage.Get('aProp') // aProp == 50
+    AppStorage.setOrCreate('aProp', 50)
+    aProp = AppStorage.get('aProp') // aProp == 50
   }
 
   // 改变设备横竖屏状态函数
@@ -135,23 +158,30 @@ struct Index {
   }
 
   // 组件内 Builder
-  @Builder builderFunction($$: { paramA1: string }) {
+  @Builder
+  builderFunctionRef($$: Tmp) {
     Row() {
       Text(`组件内Builder引用传递参数: ${$$.paramA1}`)
     }
   }
 
-  @Builder builderFunctionValue(paramA1: string) {
+  @Builder
+  builderFunctionValue(paramA1: string) {
     Row() {
       Text(`组件内Builder按值传递参数: ${paramA1}`)
     }
   }
 
 
-  // @Styles仅支持通用属性和通用事件。组件内 @Styles 不用加 function
-  @Styles textStyle() {
+  // 组件内的 @Styles 可以通过 this 访问组件的常量和状态变量，并可以在 @Styles 里通过事件来改变状态变量的值。
+  // 组件内 @Styles 的优先级高于全局 @Styles。
+  @Styles
+  textStyle() {
     .width('20%')
-    .height(50)
+    .height(this.textHeight)
+    .onClick(() => {
+      this.textHeight = 60
+    })
   }
 
   build() {
@@ -223,9 +253,9 @@ struct Index {
         .alignContent(Alignment.Center)
 
         Flex({ direction: FlexDirection.Row, justifyContent: FlexAlign.SpaceBetween }) {
-          Text('1').textStyle().backgroundColor(0xF5DEB3).extendTextStyles(10, TextAlign.Start)
-          Text('2').textStyle().backgroundColor(0xD2B48C).extendTextStyles(20, TextAlign.Center)
-          Text('3').textStyle().backgroundColor(0xF5DEB3).extendTextStyles(30, TextAlign.End)
+          Text('1').textStyle().backgroundColor(0xF5DEB3).textExtendStyles(10, TextAlign.Start)
+          Text('2').textStyle().backgroundColor(0xD2B48C).textExtendStyles(20, TextAlign.Center)
+          Text('3').textStyle().backgroundColor(0xF5DEB3).textExtendStyles(30, TextAlign.End)
         }
         .height(70)
         .width('90%')
@@ -235,11 +265,11 @@ struct Index {
         // .direction(FlexDirection.Row)
 
         // 组件外 Builder
-        overBuilder({ paramA1: this.builderMessage })
+        overBuilderRef({ paramA1: this.builderMessage })
         overBuilderValue(this.builderMessage)
 
         // 组件内 Builder
-        this.builderFunction({ paramA1: this.builderMessage })
+        this.builderFunctionRef({ paramA1: this.builderMessage })
         this.builderFunctionValue(this.builderMessage)
 
         Button('Click me')
@@ -258,7 +288,9 @@ struct Index {
 @Component
 struct HelloComponent {
   @State message: string = "Hello, I'm Hello Component!"
-  @BuilderParam builder: () => void
+
+  @Builder doNothingBuilder() {};
+  @BuilderParam builder: () => void = this.doNothingBuilder
   @Link linkMessage: string // 双向绑定，子组件更新回传给父组件
   @Prop propMessage: string // 单向传值，子组件更新不会回传给父组件
   @Consume('helloComponentsTapCount') tapCount: number

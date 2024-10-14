@@ -2,6 +2,7 @@
 
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
+import { BusinessError } from '@ohos.base';
 
 @Entry
 @Component
@@ -49,8 +50,18 @@ struct Second {
     console.info('onPageShow')
 
     // 获取 router 传递过来的参数对象
-    const params = router.getParams()
-    console.info(`id: ${params["id"]}, info: ${params["info"]}`)
+    class InfoTmp {
+      age: number = 0
+    }
+
+    class RouterTmp {
+      id: object = () => {
+      }
+      info: InfoTmp = new InfoTmp()
+    }
+
+    const params: RouterTmp  = router.getParams() as RouterTmp
+    console.info(`id: ${params.id}, info: ${params.info}`)
   }
 
   onBackPress() {
@@ -100,7 +111,7 @@ struct Second {
         // 调用router.back()方法，返回上一个页面
         router.back();
       }
-    }).catch((err) => {
+    }).catch((err: BusinessError) => {
       console.error(`Invoke showDialog failed, code is ${err.code}, message is ${err.message}`);
     })
   }

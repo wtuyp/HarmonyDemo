@@ -69,7 +69,7 @@ struct Index {
   @State linkMessage: string = '我是父组件传给子组件的linkMessage'
   @State propMessage: string = '我是父组件传给子组件的propMessage'
   @State builderMessage: string = 'builderMessage'
-  @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0 // 父组件与子孙组件Consume数据绑定
+  @Provide('helloComponentsTapCount') helloComponentsTapCount: number = 0 // 父组件与子孙组件 Consume 数据绑定 (变量名或别名相同)
   @LocalStorageLink('NumberKey') indexStoreLink: number = 1
   @StorageLink('AppStorageNumberKey') @Watch('indexAppStoreLinkChanged') indexAppStoreLink: number = 1
   @StorageLink('PersistentStorageNumberKey') indexPersistentStoreLink: number = 26; // PersistentStorage 同步属性
@@ -83,6 +83,15 @@ struct Index {
 
     this.appStorageDemo()
     this.persistentStorageDemo()
+  }
+
+  onPageShow(): void {
+    // 获取 UIAbility 实例的上下文信息
+    let context = getContext(this) as common.UIAbilityContext;
+
+    // 获取应用文件路径
+    let filesDir = context.filesDir
+    console.info('应用文件路径:' + filesDir)
   }
 
   onPortrait(mediaQueryResult: mediaQuery.MediaQueryResult) {
@@ -139,7 +148,7 @@ struct Index {
     let keys: Array<string> = PersistentStorage.keys()
 
     // 通过 AppStorage 获取
-    let aProp : number | undefined = AppStorage.get('aProp')
+    let aProp: number | undefined = AppStorage.get('aProp')
 
     AppStorage.setOrCreate('aProp', 50)
     aProp = AppStorage.get('aProp') // aProp == 50
@@ -147,7 +156,7 @@ struct Index {
 
   // 改变设备横竖屏状态函数
   private changeOrientation(isLandscape: boolean) {
-    // 获取UIAbility实例的上下文信息
+    // 获取 UIAbility 实例的上下文信息
     let context = getContext(this) as common.UIAbilityContext;
     // 调用该接口手动改变设备横竖屏状态
     window.getLastWindow(context).then((lastWindow) => {
@@ -189,7 +198,7 @@ struct Index {
   build() {
     Row() {
       Column() {
-        // HelloComponent 中有BuilderParam修饰，可以用尾随闭包传参。
+        // HelloComponent 中有 BuilderParam 修饰，可以用尾随闭包传参。
         HelloComponent({ linkMessage: $linkMessage, propMessage: this.propMessage }) {
           Text('这是父组件给子组件的[Text]，你可以点我').fontColor(Color.Red)
         }
@@ -221,6 +230,7 @@ struct Index {
             .fontColor(Color.White)
         }
         .type(ButtonType.Capsule)
+        // .stateEffect(true)
         .margin({
           top: 20
         })
@@ -296,7 +306,7 @@ struct HelloComponent {
   @Link linkMessage: string // 双向绑定，子组件更新回传给父组件
   @Prop propMessage: string // 单向传值，子组件更新不会回传给父组件
   @Consume('helloComponentsTapCount') tapCount: number
-  @LocalStorageLink('NumberKey') helloStoreLink: number = 1;
+  @LocalStorageLink('NumberKey') helloStoreLink: number = 1
   @StorageLink('AppStorageNumberKey') helloAppStoreLink: number = 1
 
   build() {
